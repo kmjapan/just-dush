@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>JUST DASH!! v1.9.0 - 音速カウンターアクション</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>JUST DASH!! v1.9.1 - 音速カウンターアクション</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -34,7 +34,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100dvh;
+      height: 100dvh;
+      width: 100vw;
       overflow: hidden;
       touch-action: manipulation;
     }
@@ -42,14 +43,18 @@
     #app-wrapper {
       width: 100%;
       max-width: 920px;
+      max-height: 100dvh;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
       gap: 8px;
       padding: 8px;
     }
 
     /* トップバー（プレイ中は非表示） */
     .top-bar {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -60,6 +65,7 @@
       font-size: 13px;
       flex-wrap: wrap;
       gap: 6px;
+      flex-shrink: 0;
     }
 
     .brand-title {
@@ -182,6 +188,7 @@
       padding: 14px;
       z-index: 10;
       text-align: center;
+      overflow-y: auto;
     }
 
     .overlay.hidden,
@@ -796,11 +803,13 @@
       color: #e0f2fe;
     }
 
-    /* 下部タッチ＆操作パッド（プレイ中のみ表示・3ボタン完全均等サイズ） */
+    /* 下部タッチ＆操作パッド（縦向き・PC時は下部に3均等配置） */
     .action-pad {
+      width: 100%;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      flex-shrink: 0;
     }
 
     .pad-btn {
@@ -852,6 +861,196 @@
       border-color: var(--accent-cyan);
       background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(0, 128, 255, 0.22));
     }
+
+    /* ====================================================================
+       スマホ横向き（ランドスケープ）対応：携帯ゲーム機風・左右オーバーレイ配置
+       ==================================================================== */
+    @media (orientation: landscape) and (max-height: 560px) {
+      #app-wrapper {
+        max-width: 100vw;
+        height: 100dvh;
+        padding: 4px 8px;
+        gap: 4px;
+      }
+
+      .top-bar {
+        padding: 3px 10px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+
+      .brand-title {
+        font-size: 14px;
+      }
+
+      .icon-btn {
+        padding: 3px 8px;
+        font-size: 11px;
+      }
+
+      /* ゲーム画面を縦幅いっぱいに自動フィットさせて下半分切れを防止 */
+      #game-container {
+        flex: 1;
+        min-height: 0;
+        width: auto;
+        max-width: 100%;
+        height: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 12px;
+      }
+
+      /* 携帯ゲーム機風：操作ボタンを画面左右端に半透明オーバーレイ配置 */
+      .action-pad {
+        position: fixed;
+        inset: 0;
+        display: block;
+        pointer-events: none;
+        z-index: 9;
+      }
+
+      .pad-btn {
+        position: fixed;
+        pointer-events: auto;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      }
+
+      .pad-btn span.sub {
+        display: none;
+      }
+
+      /* 左下：急降下ダイブ */
+      .pad-btn.dive {
+        left: max(12px, env(safe-area-inset-left));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: 96px;
+        height: 62px;
+        border-radius: 16px;
+        background: rgba(14, 165, 233, 0.28);
+        border-color: rgba(56, 189, 248, 0.75);
+        font-size: 13px;
+      }
+
+      /* 左・急降下の上：覚醒ボタン */
+      .pad-btn.overdrive {
+        left: max(12px, env(safe-area-inset-left));
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 72px);
+        width: 96px;
+        height: 54px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.45);
+        border-color: rgba(148, 163, 184, 0.6);
+        font-size: 12px;
+        opacity: 0.72;
+      }
+
+      .pad-btn.overdrive.ready {
+        opacity: 0.96;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.48), rgba(255, 42, 133, 0.48));
+      }
+
+      /* 右下：ジャンプ / 神ジャスト斬撃（右親指用の大きめ丸型半透明ボタン） */
+      .pad-btn.jump {
+        right: max(14px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: 112px;
+        height: 112px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 240, 255, 0.34) 0%, rgba(0, 128, 255, 0.24) 100%);
+        border: 2.5px solid rgba(0, 240, 255, 0.8);
+        font-size: 13px;
+        line-height: 1.25;
+      }
+
+      /* 横向き時のオーバーレイ・リザルトカードのコンパクト最適化 */
+      .overlay {
+        padding: 8px 12px;
+        justify-content: flex-start;
+      }
+
+      #screen-title,
+      #screen-pause {
+        justify-content: center;
+      }
+
+      .hero-logo {
+        font-size: 30px;
+        margin-bottom: 2px;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .stats-strip {
+        margin-bottom: 8px;
+        gap: 6px;
+      }
+
+      .stat-pill {
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+
+      .result-card {
+        padding: 7px 12px;
+        max-width: 580px;
+        margin: auto 0;
+      }
+
+      .result-char-box {
+        width: 64px;
+        height: 64px;
+      }
+
+      .result-score {
+        font-size: 24px;
+      }
+
+      .rank-name {
+        font-size: 15px;
+      }
+
+      .rank-quote {
+        font-size: 10px;
+        margin: 2px 0;
+      }
+
+      .speed-record-banner {
+        padding: 3px 8px;
+        margin: 3px 0;
+        font-size: 10px;
+      }
+
+      .nickname-tag {
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+
+      .progress-section {
+        padding: 4px 8px;
+        margin-bottom: 4px;
+        font-size: 10px;
+      }
+
+      .result-submetrics {
+        margin-bottom: 5px;
+        padding-top: 3px;
+        font-size: 10px;
+      }
+
+      .result-buttons .primary-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+      }
+
+      .save-img-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -860,7 +1059,7 @@
     <div class="top-bar" id="top-bar">
       <div>
         <span class="brand-title">JUST DASH!!</span>
-        <span class="version-badge" id="ver-secret-trigger">v1.9.0</span>
+        <span class="version-badge" id="ver-secret-trigger">v1.9.1</span>
       </div>
       <div class="top-actions">
         <button class="icon-btn cyan" id="btn-top-help">❓ あそびかた</button>
@@ -955,10 +1154,9 @@
       <!-- リザルト画面 -->
       <div id="screen-result" class="overlay hidden">
         <div class="result-card tier-1" id="result-card">
-          <div class="result-header">RESULT CARD // JUST DASH!! v1.9.0</div>
+          <div class="result-header">RESULT CARD // JUST DASH!! v1.9.1</div>
 
           <div class="result-top-row">
-            <!-- 称号専用オリジナルイラスト枠（title_1.png〜title_17.png優先 / 未配置時は専用ベクターイラスト表示） -->
             <div class="result-char-box">
               <canvas id="resultCharCanvas" width="84" height="84"></canvas>
             </div>
@@ -1035,10 +1233,10 @@
       </div>
     </div>
 
-    <!-- 下部アクションパッド（プレイ中のみ表示・3ボタン完全均等幅） -->
+    <!-- 下部／左右オーバーレイ アクションパッド（プレイ中のみ表示） -->
     <div class="action-pad hidden" id="action-pad">
       <button class="pad-btn dive" id="pad-dive">
-        ⬇ 急降下ダイブ
+        ⬇ 急降下
         <span class="sub">[↓ / S / 下スワイプ]</span>
       </button>
       <button class="pad-btn overdrive" id="pad-overdrive">
@@ -1046,7 +1244,7 @@
         <span class="sub">[Z / Shift]</span>
       </button>
       <button class="pad-btn jump" id="pad-jump">
-        ⬆ ジャンプ / 斬撃
+        ⬆ ジャンプ<br>/ 斬撃
         <span class="sub">[Space / タップ]</span>
       </button>
     </div>
@@ -1054,12 +1252,12 @@
 
   <script>
     /**
-     * JUST DASH!! v1.9.0
+     * JUST DASH!! v1.9.1
      * 更新内容:
-     * - リザルト画面に「🏠 ホーム」ボタンを追加し、タイトル画面へ直接戻れるように対応
-     * - リザルト画面およびカードPNG写真保存のキャラ表示を「メインキャラへの小道具合成」から「称号別オリジナルイラスト（assets/title_1.png〜title_17.png 優先 / 未配置時は全17称号専用のオリジナルベクターイラスト自動描画）」へ刷新
+     * - スマホ横向き（ランドスケープ）対応：ゲーム画面を縦幅100dvh内に自動フィットさせ下半分切れを防止
+     * - 携帯ゲーム機風UI：横向き時のみ操作パッド（急降下・覚醒・ジャンプ/斬撃）を画面左右端に半透明オーバーレイ配置
      */
-    const GAME_VERSION = "v1.9.0";
+    const GAME_VERSION = "v1.9.1";
     const STORAGE_KEY = "just_dash_save_v1";
     const MAX_BG_SLOTS = 10;
 
@@ -1568,7 +1766,6 @@
       heroSprites[key].img.src = spritePaths[key];
     });
 
-    // 障害物4種の画像ローダー
     const enemySprites = {
       spike:  { img: new Image(), loaded: false },
       robo:   { img: new Image(), loaded: false },
@@ -1589,7 +1786,6 @@
       enemySprites[key].img.src = enemySpritePaths[key];
     });
 
-    // 背景画像ローダー（assets/bg1.png 〜 bg10.png 最大10枚自動検出）
     const bgSlots = [];
     for (let i = 1; i <= MAX_BG_SLOTS; i++) {
       const im = new Image();
@@ -1621,7 +1817,6 @@
       };
     }
 
-    // 称号別専用オリジナル画像ローダー（assets/title_1.png 〜 assets/title_17.png）
     const titleSprites = {};
     TITLES.forEach(t => {
       const im = new Image();
@@ -1632,9 +1827,6 @@
       titleSprites[t.id] = entry;
     });
 
-    /**
-     * ゲームプレイ中の走行・ジャンプ・覚醒キャラ描画（基本5枚そのままを使用）
-     */
     function drawPlayHeroSprite(targetCtx, animTime, isAwakening, isJumping, isCooldown) {
       let activeSprite = null;
       if (isAwakening && heroSprites.awakening.loaded) activeSprite = heroSprites.awakening.img;
@@ -1650,7 +1842,6 @@
         return;
       }
 
-      // 基本5枚が無い場合の仮ヒーロー描画
       const scarfColor = isAwakening ? "#ffd700" : "#ff2a85";
       targetCtx.fillStyle = scarfColor;
       targetCtx.beginPath();
@@ -1679,11 +1870,6 @@
       targetCtx.fillRect(2 - legSwing, -8, 10, 8);
     }
 
-    /**
-     * リザルト画面＆カード写真保存用の「称号別オリジナルイラスト」描画（84x84領域基準）
-     * 1. assets/title_1.png〜title_17.png があれば優先描画
-     * 2. 無ければメイン画像への合成ではなく、各称号専用のオリジナルベクターイラストを描画
-     */
     function renderTitleOriginalArt(targetCtx, titleId, boxSize, forceVectorOnly = false) {
       if (!forceVectorOnly && titleSprites[titleId] && titleSprites[titleId].loaded) {
         const pad = 4;
@@ -1695,7 +1881,6 @@
       const s = boxSize / 84;
       targetCtx.scale(s, s);
 
-      // 背景オーラ（高ランク称号ほど豪華に）
       if (titleId >= 16) {
         const aura = targetCtx.createRadialGradient(42, 42, 6, 42, 42, 40);
         aura.addColorStop(0, titleId === 17 ? "rgba(0, 240, 255, 0.7)" : "rgba(255, 215, 0, 0.65)");
@@ -1710,7 +1895,6 @@
         targetCtx.fillRect(0, 0, 84, 84);
       }
 
-      // 超神の光の翼（背面）
       if (titleId === 17) {
         targetCtx.fillStyle = "rgba(0, 240, 255, 0.75)";
         targetCtx.strokeStyle = "#ffd700";
@@ -1728,23 +1912,22 @@
         });
       }
 
-      // 服装・ボディの描き分け
       let bodyColor = "#3b82f6";
-      if (titleId === 1) bodyColor = "#fbcfe8";       // 赤ちゃん（ベビー服）
-      else if (titleId === 2) bodyColor = "#7dd3fc";  // 幼稚園児（水色スモック）
-      else if (titleId === 3) bodyColor = "#ef4444";  // 小学生（赤シャツ＋ランドセル）
-      else if (titleId === 4 || titleId === 5) bodyColor = "#1e293b"; // 中学生・生徒会長（学ラン）
-      else if (titleId === 6) bodyColor = "#1d4ed8";  // 高校生（紺ブレザー）
-      else if (titleId === 7) bodyColor = "#10b981";  // 大学生（パーカー）
-      else if (titleId === 8) bodyColor = "#16a34a";  // コンビニ店長（緑ユニフォーム）
-      else if (titleId === 9 || titleId === 10) bodyColor = "#334155"; // 社会人・課長（スーツ）
-      else if (titleId === 11) bodyColor = "#090d16"; // 別班（黒コート）
-      else if (titleId === 12) bodyColor = "#111827"; // 社長（タキシード）
-      else if (titleId === 13) bodyColor = "#ec4899"; // ユーチューバー（派手ジャケット）
-      else if (titleId === 14) bodyColor = "#2563eb"; // 勇者（青マント＆鎧）
-      else if (titleId === 15) bodyColor = "#f8fafc"; // 司令官（白軍服）
-      else if (titleId === 16) bodyColor = "#ffffff"; // 神（純白神衣）
-      else if (titleId === 17) bodyColor = "#fef08a"; // 超神（黄金神衣）
+      if (titleId === 1) bodyColor = "#fbcfe8";
+      else if (titleId === 2) bodyColor = "#7dd3fc";
+      else if (titleId === 3) bodyColor = "#ef4444";
+      else if (titleId === 4 || titleId === 5) bodyColor = "#1e293b";
+      else if (titleId === 6) bodyColor = "#1d4ed8";
+      else if (titleId === 7) bodyColor = "#10b981";
+      else if (titleId === 8) bodyColor = "#16a34a";
+      else if (titleId === 9 || titleId === 10) bodyColor = "#334155";
+      else if (titleId === 11) bodyColor = "#090d16";
+      else if (titleId === 12) bodyColor = "#111827";
+      else if (titleId === 13) bodyColor = "#ec4899";
+      else if (titleId === 14) bodyColor = "#2563eb";
+      else if (titleId === 15) bodyColor = "#f8fafc";
+      else if (titleId === 16) bodyColor = "#ffffff";
+      else if (titleId === 17) bodyColor = "#fef08a";
 
       targetCtx.fillStyle = bodyColor;
       targetCtx.strokeStyle = "#0f172a";
@@ -1754,19 +1937,15 @@
       targetCtx.fill();
       targetCtx.stroke();
 
-      // 服装のディテール
       if (titleId === 1) {
-        // 赤ちゃん：よだれかけ（スタイ）
         targetCtx.fillStyle = "#ffffff";
         targetCtx.beginPath();
         targetCtx.arc(42, 54, 11, 0, Math.PI);
         targetCtx.fill();
       } else if (titleId === 2) {
-        // 幼稚園児：チューリップ名札
         targetCtx.fillStyle = "#facc15";
         targetCtx.fillRect(28, 56, 8, 6);
       } else if (titleId === 3) {
-        // 小学生：ランドセル肩ベルト
         targetCtx.strokeStyle = "#7f1d1d";
         targetCtx.lineWidth = 3;
         targetCtx.beginPath();
@@ -1774,11 +1953,9 @@
         targetCtx.moveTo(56, 49); targetCtx.lineTo(56, 76);
         targetCtx.stroke();
       } else if (titleId === 5) {
-        // 生徒会長：赤い腕章
         targetCtx.fillStyle = "#ef4444";
         targetCtx.fillRect(19, 56, 10, 8);
       } else if (titleId === 6 || titleId === 9 || titleId === 10 || titleId === 12) {
-        // ネクタイ（社長は黄金、他は赤）
         targetCtx.fillStyle = titleId === 12 ? "#ffd700" : "#ef4444";
         targetCtx.beginPath();
         targetCtx.moveTo(42, 50);
@@ -1788,17 +1965,14 @@
         targetCtx.closePath();
         targetCtx.fill();
       } else if (titleId === 8) {
-        // コンビニ店長：白エプロンライン
         targetCtx.fillStyle = "#ffffff";
         targetCtx.fillRect(32, 50, 20, 28);
       } else if (titleId === 14 || titleId === 15) {
-        // 勇者・司令官：黄金の肩章
         targetCtx.fillStyle = "#ffd700";
         targetCtx.fillRect(20, 48, 10, 6);
         targetCtx.fillRect(54, 48, 10, 6);
       }
 
-      // 顔（ヘッド）
       targetCtx.fillStyle = "#fde68a";
       targetCtx.strokeStyle = "#0f172a";
       targetCtx.lineWidth = 2;
@@ -1807,9 +1981,7 @@
       targetCtx.fill();
       targetCtx.stroke();
 
-      // 髪型（赤ちゃん以外）
       if (titleId === 1) {
-        // 赤ちゃん：ちょろ毛1本
         targetCtx.strokeStyle = "#78350f";
         targetCtx.lineWidth = 2;
         targetCtx.beginPath();
@@ -1822,9 +1994,7 @@
         targetCtx.fill();
       }
 
-      // 表情（目・口・メガネ・サングラス）
       if (titleId === 11) {
-        // 別班：黒サングラス
         targetCtx.fillStyle = "#000000";
         targetCtx.strokeStyle = "#ffd700";
         targetCtx.lineWidth = 1.5;
@@ -1833,14 +2003,12 @@
         targetCtx.strokeRect(26, 28, 14, 8);
         targetCtx.strokeRect(44, 28, 14, 8);
       } else {
-        // 目
         targetCtx.fillStyle = titleId >= 16 ? "#ff2a85" : "#0f172a";
         targetCtx.beginPath();
         targetCtx.arc(35, 33, 2.5, 0, Math.PI * 2);
         targetCtx.arc(49, 33, 2.5, 0, Math.PI * 2);
         targetCtx.fill();
 
-        // 生徒会長・課長のメガネ
         if (titleId === 5 || titleId === 10) {
           targetCtx.strokeStyle = "#ffffff";
           targetCtx.lineWidth = 1.5;
@@ -1849,9 +2017,7 @@
         }
       }
 
-      // 口元
       if (titleId === 1) {
-        // 赤ちゃん：おしゃぶり
         targetCtx.fillStyle = "#38bdf8";
         targetCtx.beginPath();
         targetCtx.arc(42, 41, 5, 0, Math.PI * 2);
@@ -1861,7 +2027,6 @@
         targetCtx.stroke();
       } else {
         if (titleId === 10) {
-          // 課長：貫禄ヒゲ
           targetCtx.fillStyle = "#334155";
           targetCtx.fillRect(36, 38, 12, 3);
         }
@@ -1872,9 +2037,7 @@
         targetCtx.stroke();
       }
 
-      // 頭上の専用アイテム（帽子・再生ボタン・光輪）
       if (titleId === 2 || titleId === 3) {
-        // 黄色い通園帽・通学帽
         targetCtx.fillStyle = "#facc15";
         targetCtx.strokeStyle = "#ca8a04";
         targetCtx.lineWidth = 1.5;
@@ -1884,11 +2047,9 @@
         targetCtx.stroke();
         targetCtx.fillRect(24, 19, 36, 4);
       } else if (titleId === 8) {
-        // コンビニ店長：緑サンバイザー
         targetCtx.fillStyle = "#10b981";
         targetCtx.fillRect(24, 17, 36, 6);
       } else if (titleId === 13) {
-        // ユーチューバー：赤い再生ボタンアイコン
         targetCtx.fillStyle = "#ef4444";
         targetCtx.beginPath();
         targetCtx.roundRect(28, 4, 28, 16, 4);
@@ -1901,7 +2062,6 @@
         targetCtx.closePath();
         targetCtx.fill();
       } else if (titleId === 14) {
-        // 勇者：黄金サークレット
         targetCtx.strokeStyle = "#ffd700";
         targetCtx.lineWidth = 3;
         targetCtx.beginPath();
@@ -1913,7 +2073,6 @@
         targetCtx.arc(42, 22, 3.5, 0, Math.PI * 2);
         targetCtx.fill();
       } else if (titleId === 15) {
-        // 司令官：制帽
         targetCtx.fillStyle = "#1e293b";
         targetCtx.fillRect(25, 11, 34, 9);
         targetCtx.fillStyle = "#ffd700";
@@ -1922,7 +2081,6 @@
         targetCtx.arc(42, 14, 3, 0, Math.PI * 2);
         targetCtx.fill();
       } else if (titleId === 16 || titleId === 17) {
-        // 神・超神：頭上の光輪
         targetCtx.strokeStyle = titleId === 17 ? "#00f0ff" : "#ffd700";
         targetCtx.lineWidth = 3.5;
         targetCtx.beginPath();
@@ -1934,7 +2092,7 @@
     }
 
     // ==========================================
-    // 7. ゲームエンジン本体（v1.9.0）
+    // 7. ゲームエンジン本体（v1.9.1）
     // ==========================================
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -2056,6 +2214,7 @@
       gameState = "PAUSED";
       sfx.pauseBgm();
       setPauseBtnVisible(false);
+      setActionPadVisible(false);
       document.getElementById("pause-score-info").textContent =
         `現在スコア: ${score.toLocaleString()} pt（${currentRankObj.name}）`;
       document.getElementById("screen-pause").classList.remove("hidden");
@@ -2067,6 +2226,7 @@
       lastTime = performance.now();
       document.getElementById("screen-pause").classList.add("hidden");
       setPauseBtnVisible(true);
+      setActionPadVisible(true);
     }
 
     function resetGame() {
@@ -2701,6 +2861,7 @@
       crashTimer = 0.85;
       sfx.stopAllBgm(true);
       setPauseBtnVisible(false);
+      setActionPadVisible(false);
       sfx.crash();
       triggerShake(0.35, 16);
       spawnParticles(player.x + player.w / 2, player.y - player.h / 2, "#ff2a85", 25);
@@ -2813,7 +2974,6 @@
       document.getElementById("res-dex").textContent = `${unlockedCount}/${totalVisible}`;
       document.getElementById("res-nick-dex").textContent = `${nickCount}/${NICKNAMES.length}`;
 
-      // 結果画面の称号別オリジナルイラスト描画（title_1.png〜title_17.png 優先 / 無ければ専用ベクター描画）
       const charCanvas = document.getElementById("resultCharCanvas");
       const cCtx = charCanvas.getContext("2d");
       cCtx.clearRect(0, 0, 84, 84);
@@ -2872,7 +3032,6 @@
       oCtx.textAlign = "right";
       oCtx.fillText(snap.dateStr, outW - 36, 46);
 
-      // 称号別オリジナルイラスト枠（128x128）
       oCtx.fillStyle = "rgba(0, 0, 0, 0.42)";
       oCtx.strokeStyle = "rgba(255, 255, 255, 0.3)";
       oCtx.lineWidth = 2;
@@ -3415,13 +3574,13 @@
     function updatePadUI() {
       const odBtn = document.getElementById("pad-overdrive");
       if (overdriveTimer > 0) {
-        odBtn.innerHTML = `⚡ 無敵中! (${overdriveTimer.toFixed(1)}s)<span class="sub">無敵モード</span>`;
+        odBtn.innerHTML = `⚡ 無敵中!<br>(${overdriveTimer.toFixed(1)}s)<span class="sub">無敵モード</span>`;
         odBtn.classList.add("ready");
       } else if (gauge >= 100) {
-        odBtn.innerHTML = `⚡ 覚醒 READY!<span class="sub">[Z / Shift / タップ]</span>`;
+        odBtn.innerHTML = `⚡ 覚醒<br>READY!<span class="sub">[Z / Shift / タップ]</span>`;
         odBtn.classList.add("ready");
       } else {
-        odBtn.innerHTML = `⚡ 覚醒 (${Math.floor(gauge)}%)<span class="sub">[Z / Shift]</span>`;
+        odBtn.innerHTML = `⚡ 覚醒<br>(${Math.floor(gauge)}%)<span class="sub">[Z / Shift]</span>`;
         odBtn.classList.remove("ready");
       }
     }
@@ -3694,14 +3853,17 @@
 
     document.getElementById("pad-jump").addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       if (gameState === "PLAYING") triggerJumpOrJust();
     });
     document.getElementById("pad-dive").addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       triggerDive();
     });
     document.getElementById("pad-overdrive").addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       triggerOverdrive();
     });
 
